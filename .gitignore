@@ -1,5 +1,7 @@
 .env
+.dev.vars
 node_modules/
 logs/
 .DS_Store
 *.log
+.wrangler/

@@ -1,0 +1,8 @@
+# Cloudflare Pages — Hey There
+name = "hey-there"
+compatibility_date = "2025-09-01"
+pages_build_output_dir = "public"
+
+# Secrets (OPENAI_API_KEY, GROQ_API_KEY, HEYTHERE_ACCESS_CODE) are set in the
+# Cloudflare dashboard → Workers & Pages → hey-there → Settings → Variables and Secrets.
+# Do not put real keys in this file.

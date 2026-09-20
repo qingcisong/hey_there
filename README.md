@@ -79,18 +79,48 @@ gets used by the Realtime server — no copy-paste needed.
 ## Deployment
 
 This app **cannot run on GitHub Pages alone** — it needs a server to hold the
-API keys (otherwise anyone can view-source and take them). Two recommended
-paths:
+API keys (otherwise anyone can view-source and take them).
 
-- **Cloudflare Pages + Workers** — static frontend + Workers for the four
-  server endpoints. Free tier is generous. Port `server.js`'s handlers into
-  a Workers script.
-- **Vercel** — same idea with serverless functions. Frontend static, one
-  route per endpoint.
+### Cloudflare Pages (recommended)
 
-For pure-static GitHub Pages, you'd need a separate backend host (Cloudflare
-Workers, Fly.io, Railway, Render) with CORS enabled and the frontend calling
-its URL.
+The repo is already wired for Cloudflare Pages:
+
+- Static UI from `public/`
+- API routes as Pages Functions in `functions/` (`/verify-code`, `/realtime-token`, `/transcribe`, `/valence`, `/log`)
+
+**One-time setup in the Cloudflare dashboard:**
+
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**.
+2. Select the `qingcisong/hey_there` GitHub repo.
+3. Build settings:
+   - **Framework preset:** None
+   - **Build command:** *(leave empty)*
+   - **Build output directory:** `public`
+4. Click **Save and Deploy**.
+5. After the first deploy: **Settings** → **Variables and Secrets** → add these for **Production** (and Preview if you want):
+
+   | Name | Type | Value |
+   |------|------|--------|
+   | `OPENAI_API_KEY` | Secret | your OpenAI key |
+   | `GROQ_API_KEY` | Secret | your Groq key |
+   | `HEYTHERE_ACCESS_CODE` | Secret | your access code |
+
+6. **Redeploy** once after adding secrets (Deployments → … → Retry deployment), otherwise Functions still run without keys.
+7. Open `https://<project>.pages.dev`, enter the access code, and try a call.
+
+**Custom domain (optional):** Pages → your project → **Custom domains** → add `heythere.qingcisong.com`. Cloudflare will tell you the DNS records to set (usually a CNAME to your `*.pages.dev` host). Point DNS there instead of GitHub Pages if you want this to be the live site.
+
+**Local Cloudflare preview:**
+
+```sh
+npx wrangler pages dev public --compatibility-date=2025-09-01
+# secrets: create .dev.vars (gitignored) with the same three keys as .env
+```
+
+### Other options
+
+- **Vercel** — same idea with serverless functions.
+- **Local Node:** `npm start` with a `.env` (uses `server.js`).
 
 ## What's built
 

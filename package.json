@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "start":    "node --env-file=.env server.js",
-    "test:sop": "node --env-file=.env scripts/test-sop.js"
+    "test:sop": "node --env-file=.env scripts/test-sop.js",
+    "sync:sop": "node scripts/sync-sop.js",
+    "cf:dev":   "npm run sync:sop && npx wrangler pages dev public --compatibility-date=2025-09-01"
   }
 }

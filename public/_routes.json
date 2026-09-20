@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "include": [
+    "/verify-code",
+    "/realtime-token",
+    "/transcribe",
+    "/valence",
+    "/log"
+  ],
+  "exclude": []
+}
