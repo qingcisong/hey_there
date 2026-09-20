@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hey There</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#22384B; --slate:#5D6F7E; --sun:#DFA05A;
+  --display:"Instrument Serif",Georgia,serif;
+  --ui:"IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --bg1:#E9EFF3; --bg2:#D8E3EA;
+  --bg1-happy:#F5EEE2; --bg2-happy:#E9DAC3;
+  --bg1-low:#DEE6EC;   --bg2-low:#C4D2DE;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--ui); color:var(--ink);
+  background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 100%);
+  transition:background 1200ms ease;
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  padding:16px 8px;
+}
+body.read-happy{background:linear-gradient(180deg,var(--bg1-happy) 0%,var(--bg2-happy) 100%)}
+body.read-low  {background:linear-gradient(180deg,var(--bg1-low)   0%,var(--bg2-low)   100%)}
+.app{
+  width:min(500px,100%); min-height:min(760px,92vh);
+  display:flex; flex-direction:column; align-items:center;
+  padding:24px 12px 32px; position:relative;
+}
+.timer{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.06em;
+  color:rgba(34,56,75,.4); align-self:flex-start; padding:4px 0; height:20px;
+  opacity:0; transition:opacity 260ms ease;
+}
+.timer.on{opacity:1}
+.cloudwrap{margin-top:32px; width:340px; height:280px; max-width:100%; display:flex; align-items:center; justify-content:center; overflow:visible}
+.cloud{width:100%; height:100%}
+.line{
+  margin-top:14px; padding:0 20px; text-align:center;
+  font-family:var(--display); font-size:28px; line-height:1.25;
+  color:var(--ink); transition:opacity 380ms ease; min-height:36px;
+}
+.sub{
+  margin-top:8px; font-size:13px; color:rgba(34,56,75,.5);
+  text-align:center; padding:0 30px; line-height:1.5;
+  transition:opacity 380ms ease; min-height:20px;
+}
+
+/* Context line — location/time/weather shown to the user for reference */
+.context-line{
+  margin-top:14px; width:100%; max-width:460px;
+  font-family:var(--mono); font-size:11px;
+  color:rgba(34,56,75,.55);
+  text-align:center; line-height:1.55;
+  padding:0 8px;
+  white-space:normal;
+}
+.context-line .dot{opacity:.4; padding:0 6px}
+.context-line .empty{display:none}
+.context-line .empty + .dot{display:none}
+
+/* Status strip — always visible during a call */
+.status{
+  margin-top:10px; width:100%; max-width:440px;
+  min-width:0; overflow:hidden;
+  display:flex; flex-direction:column;
+}
+.status-row{
+  display:flex; align-items:stretch; gap:12px;
+  min-width:0;
+  border:1px solid rgba(34,56,75,.16);
+  background:rgba(255,255,255,.6);
+  border-radius:14px; padding:12px 12px;
+}
+.status-emoji{
+  font-size:34px; line-height:1;
+  display:flex; align-items:center; justify-content:center;
+  min-width:44px; flex:none;
+  transition:transform 320ms ease;
+}
+.status-metrics{
+  flex:1; min-width:0;
+  display:grid; grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:2px 8px;
+  align-items:baseline;
+}
+.metric{text-align:left; min-width:0; overflow:hidden}
+.metric-label{
+  font-size:9.5px; color:rgba(34,56,75,.55);
+  text-transform:uppercase; letter-spacing:.06em;
+  font-family:var(--ui); font-weight:500;
+}
+.metric-value{
+  font-family:var(--mono); font-size:12.5px; color:var(--ink);
+  margin-top:2px;
+}
+.metric-z{
+  font-family:var(--mono); font-size:10px;
+  color:rgba(34,56,75,.45); margin-top:1px; min-height:12px;
+}
+.status-notes{
+  margin-top:10px; padding:8px 12px;
+  font-size:12px; line-height:1.45;
+  border-radius:8px;
+}
+.status-notes.mismatch{
+  background:rgba(223,160,90,.14); color:#7a4914;
+  border:1px solid rgba(223,160,90,.35);
+}
+.status-notes.baseline{
+  background:rgba(34,56,75,.05); color:rgba(34,56,75,.65);
+  border:1px solid rgba(34,56,75,.12);
+}
+
+.actions{
+  margin-top:auto; padding-top:24px;
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+}
+button{font:inherit; cursor:pointer; background:transparent; color:var(--ink)}
+.btn-primary{
+  border:1px solid rgba(34,56,75,.35);
+  background:rgba(255,255,255,.55);
+  border-radius:999px; padding:14px 32px; font-size:15px;
+  min-width:200px; transition:background 180ms ease;
+}
+.btn-primary:hover{background:rgba(255,255,255,.85)}
+.btn-primary:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
+.btn-primary[disabled]{opacity:.5; cursor:progress}
+.btn-quiet{
+  border:1px solid rgba(34,56,75,.22);
+  color:rgba(34,56,75,.6);
+  border-radius:999px; padding:10px 24px; font-size:13.5px;
+}
+.btn-quiet:hover{background:rgba(34,56,75,.06)}
+
+.code-form{
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+}
+.code-input{
+  font-family:var(--mono); font-size:22px; letter-spacing:.32em;
+  text-align:center; width:200px; padding:12px 8px;
+  border:1px solid rgba(34,56,75,.22);
+  border-radius:12px; background:rgba(255,255,255,.55);
+  color:var(--ink);
+}
+.code-input::placeholder{letter-spacing:.06em; color:rgba(34,56,75,.35)}
+.code-input:focus{outline:2px solid var(--sun); outline-offset:2px}
+.code-err{
+  font-family:var(--mono); font-size:11.5px; color:#8a3a2a;
+  height:16px; text-align:center;
+}
+.topbar{
+  position:fixed; top:10px; right:14px;
+  display:flex; gap:14px;
+  font-family:var(--mono); font-size:11px;
+  z-index:50;
+}
+.topbar a{
+  color:rgba(34,56,75,.45); text-decoration:none;
+}
+.topbar a:hover{color:var(--ink)}
+.err{
+  position:absolute; bottom:6px; left:24px; right:24px;
+  text-align:center; font-size:11.5px; color:#8a3a2a;
+  font-family:var(--mono);
+}
+audio{display:none}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="/recordings">recordings</a>
+</div>
+<div class="app">
+  <div class="timer" id="timer">00:00</div>
+
+  <div class="cloudwrap">
+    <svg class="cloud" viewBox="14 -18 192 176" aria-label="Cloud avatar">
+      <g id="grp">
+        <path d="M56 120h92a33 33 0 0 0 3-66 45 45 0 0 0-86-12 29 29 0 0 0-9 78z"
+              fill="#FFFFFF" stroke="#22384B" stroke-width="2.6" stroke-linejoin="round"/>
+        <g id="gFlat" opacity="0"></g>
+        <g id="gEyes"></g>
+        <g id="gExtra"></g>
+      </g>
+    </svg>
+  </div>
+
+  <div class="line" id="line">Hey there.</div>
+  <div class="sub" id="sub">Tap when you want to talk.</div>
+
+  <div class="context-line" id="contextLine" style="display:none">
+    <span id="ctxLoc"></span><span class="dot">·</span><span id="ctxTime"></span><span class="dot">·</span><span id="ctxWx"></span><span class="dot" id="ctxSunsetDot">·</span><span id="ctxSunset"></span>
+  </div>
+
+  <div class="status" id="status" style="display:none">
+    <div class="status-row">
+      <div class="status-emoji" id="statusEmoji">👂</div>
+      <div class="status-metrics">
+        <div class="metric">
+          <div class="metric-label">pace</div>
+          <div class="metric-value" id="mPace">—</div>
+          <div class="metric-z" id="zPace"></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">pause</div>
+          <div class="metric-value" id="mPause">—</div>
+          <div class="metric-z" id="zPause"></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">pitch</div>
+          <div class="metric-value" id="mPitch">—</div>
+          <div class="metric-z" id="zPitch"></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">valence</div>
+          <div class="metric-value" id="mValence">—</div>
+          <div class="metric-z"></div>
+        </div>
+      </div>
+    </div>
+    <div class="status-notes" id="statusNotes" style="display:none"></div>
+  </div>
+
+  <div class="actions" id="actions">
+    <button class="btn-primary" id="callBtn">Tap to talk</button>
+  </div>
+
+  <div class="err" id="err"></div>
+</div>
+
+<audio id="remoteAudio" autoplay playsinline></audio>
+
+<script type="module">
+import { PitchTracker } from './lib/yin.js';
+import {
+  saveRecording, pushTurn, getBaseline,
+  featuresFromWhisper, computeZ, energy, mismatchFlag,
+} from './lib/store.js';
+
+const $ = (id) => document.getElementById(id);
+
+/* ==============================================================
+   Dev logger — captures every dc event in/out, /transcribe and
+   /valence I/O, errors. Persists with recording at end of call.
+   ============================================================== */
+const dbg = {
+  events: [],
+  callStart: 0,
+  cap: 2000,
+  listEl: null,
+  log(kind, type, data) {
+    const now = performance.now();
+    const rel = this.callStart ? (now - this.callStart) / 1000 : 0;
+    const entry = { rel, at: Date.now(), kind, type, data: data ?? null };
+    this.events.push(entry);
+    if (this.events.length > this.cap * 1.2) this.events = this.events.slice(-this.cap);
+    this.render(entry);
+  },
+  render(entry) {
+    if (!this.listEl) return;
+    const line = document.createElement('div');
+    line.className = 'dbg-line ' + entry.kind;
+    const stamp = ('   ' + entry.rel.toFixed(2)).slice(-6) + 's';
+    const short = entry.data ? '  ' + this.summarize(entry.data) : '';
+    line.textContent = `${stamp}  ${entry.kind.padEnd(4)}  ${entry.type}${short}`;
+    this.listEl.appendChild(line);
+    while (this.listEl.children.length > 400) this.listEl.removeChild(this.listEl.firstChild);
+    this.listEl.scrollTop = this.listEl.scrollHeight;
+  },
+  summarize(d) {
+    try {
+      if (typeof d === 'string') return d.length > 200 ? d.slice(0, 200) + '…' : d;
+      const s = JSON.stringify(d);
+      return s.length > 260 ? s.slice(0, 260) + '…' : s;
+    } catch { return ''; }
+  },
+  reset() {
+    this.events = [];
+    this.callStart = performance.now();
+    if (this.listEl) this.listEl.innerHTML = '';
+  },
+  snapshot() { return this.events.slice(); },
+};
+
+// Redact / summarize noisy Realtime events before logging
+function summarizeRealtimeEvent(msg) {
+  const t = msg.type;
+  if (t === 'response.output_audio.delta' || t === 'response.audio.delta') {
+    return { deltaBytes: (msg.delta?.length || 0), item_id: msg.item_id };
+  }
+  if (t === 'response.output_audio_transcript.delta') {
+    return { delta: msg.delta };
+  }
+  if (t === 'input_audio_buffer.append') {
+    return { bytes: (msg.audio?.length || 0) };
+  }
+  return msg;
+}
+
+/* ==============================================================
+   Cloud avatar — all 12 faces, from cloud-motion.html
+   ============================================================== */
+const grp = $('grp'), gEyes = $('gEyes'), gFlat = $('gFlat'), gExtra = $('gExtra');
+const LX = 92, RX = 126, Y = 80, S = '#22384B';
+const P = (d, x) => '<path d="' + d + '" fill="none" stroke="' + S +
+  '" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"' + (x || '') + '/>';
+const E = {
+  calm : (x) => P('M'+(x-10)+' '+Y+' Q'+x+' '+(Y+9)+' '+(x+10)+' '+Y),
+  happy: (x) => P('M'+(x-10)+' '+(Y+5)+' Q'+x+' '+(Y-9)+' '+(x+10)+' '+(Y+5)),
+  gt   : (x) => P('M'+(x-7)+' '+(Y-9)+' L'+(x+8)+' '+Y+' L'+(x-7)+' '+(Y+9)),
+  lt   : (x) => P('M'+(x+7)+' '+(Y-9)+' L'+(x-8)+' '+Y+' L'+(x+7)+' '+(Y+9)),
+  flat : (x) => P('M'+(x-10)+' '+Y+' h20'),
+  round: (x) => '<circle cx="'+x+'" cy="'+Y+'" r="6.5" fill="none" stroke="'+S+'" stroke-width="4.6"/>',
+  dot  : (x) => '<circle cx="'+x+'" cy="'+Y+'" r="3.6" fill="'+S+'"/>',
+  nope : (x) => P('M'+(x-10)+' '+(Y-3)+' h15 l4 7'),
+  tee  : (x) => P('M'+(x-9)+' '+(Y-10)+' h18 M'+x+' '+(Y-10)+' v21'),
+  ex   : (x) => P('M'+(x-8)+' '+(Y-8)+' L'+(x+8)+' '+(Y+8)+' M'+(x+8)+' '+(Y-8)+' L'+(x-8)+' '+(Y+8)),
+  brow : (x) => P('M'+(x-10)+' '+(Y-1)+' Q'+x+' '+(Y+7)+' '+(x+10)+' '+(Y-1)),
+  wEye : (x) => '<circle cx="'+x+'" cy="'+(Y+15)+'" r="5.8" fill="none" stroke="'+S+'" stroke-width="4.4"/>',
+  angL : P('M'+(LX-11)+' '+(Y-18)+' L'+(LX+8)+' '+(Y-8),' stroke-width="4.6"'),
+  angR : P('M'+(RX+11)+' '+(Y-18)+' L'+(RX-8)+' '+(Y-8),' stroke-width="4.6"'),
+  sweat: '<path d="M163 46 q-6 8 0 11.5 q6 -3.5 0 -11.5 z" fill="'+S+'" opacity=".7"/>',
+  think: '<g fill="'+S+'" opacity=".62"><circle cx="150" cy="52" r="3"/><circle cx="161" cy="45" r="3.8"/><circle cx="174" cy="37" r="4.6"/></g>',
+  zzz  : '<g fill="none" stroke="'+S+'" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" opacity=".65">'+
+         '<path d="M148 54 h8 l-8 9 h8"/><path d="M162 41 h10 l-10 11 h10"/></g>',
+};
+const FLAT = E.flat(LX) + E.flat(RX);
+
+const FACES = {
+  calm     : { kao:'◡ ◡',    eyes: E.calm(LX)+E.calm(RX),                                extra:'',        read:'calm' },
+  happy    : { kao:'^ ^',    eyes: E.happy(LX)+E.happy(RX),                              extra:'',        read:'happy'},
+  delighted: { kao:'> <',    eyes: E.gt(LX)+E.lt(RX),                                    extra:'',        read:'happy'},
+  wink     : { kao:'> -',    eyes: E.gt(LX)+E.flat(RX),                                  extra:'',        read:'happy'},
+  attentive: { kao:'o o',    eyes: E.round(LX)+E.round(RX),                              extra:'',        read:'calm' },
+  thinking : { kao:'· ·',    eyes: E.dot(LX)+E.dot(RX),                                  extra: E.think,  read:'calm' },
+  unsure   : { kao:'¬ ¬',    eyes: E.nope(LX)+E.nope(RX),                                extra:'',        read:'calm' },
+  concerned: { kao:'⌒o o⌒',  eyes: E.brow(LX)+E.brow(RX)+E.wEye(LX)+E.wEye(RX),          extra:'',        read:'low'  },
+  angry    : { kao:'\\- -/', eyes: E.angL+E.angR+E.flat(LX)+E.flat(RX),                  extra: E.sweat,  read:'calm' },
+  sad      : { kao:'T T',    eyes: E.tee(LX)+E.tee(RX),                                  extra:'',        read:'low'  },
+  dying    : { kao:'x x',    eyes: E.ex(LX)+E.ex(RX),                                    extra:'',        read:'low'  },
+  resting  : { kao:'- - z',  eyes: E.flat(LX)+E.flat(RX),                                extra: E.zzz,    read:'low'  },
+};
+
+const READ = {
+  calm : { period: 2.6, inflate: .055, squash: .030, bob: 3.4, hop: 0,  sway: 0,   sink: 0, tilt: 0 },
+  happy: { period: 1.05,inflate: .040, squash: .075, bob: 0,   hop: 12, sway: 3.4, sink:-3, tilt: 0 },
+  low  : { period: 3.8, inflate: .026, squash: .018, bob: 2.0, hop: 0,  sway: 1.2, sink: 7, tilt:-2.4 },
+};
+
+let mode = 'listening', readKey = 'low';
+let cur = null, tgt = null, from = null, tFrom = 0;
+const TR = 650;
+const targets = () => {
+  const r = READ[readKey], p = {};
+  for (const k in r) p[k] = r[k];
+  p.talk = mode === 'talking' ? 1 : 0;
+  p.think = mode === 'thinking' ? 1 : 0;
+  return p;
+};
+const easeIO = (t) => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+
+let curFace = 'resting', tr = null, blinkT = 0, nextBlink = 0;
+// Longer, more deliberate transition: face fades to flat (neutral), holds, then opens.
+const T_OUT = 260, T_HOLD = 320, T_IN = 380;
+const easeIn = (t) => t*t*t;
+const easeOutBack = (t) => { const c = 1.25; return 1 + (c+1)*Math.pow(t-1,3) + c*Math.pow(t-1,2); };
+
+function paint(name) {
+  gEyes.innerHTML = FACES[name].eyes;
+  gExtra.innerHTML = FACES[name].extra;
+  gFlat.innerHTML = FLAT;
+}
+function setBg(r) {
+  document.body.classList.remove('read-happy', 'read-low');
+  if (r === 'happy') document.body.classList.add('read-happy');
+  else if (r === 'low') document.body.classList.add('read-low');
+}
+function setRead(r) {
+  readKey = r;
+  from = cur ? { ...cur } : targets();
+  tgt = targets();
+  tFrom = performance.now();
+  setBg(r);
+}
+// One emotion per AI response: express_feeling fires once at the start of a
+// response, that face + rhythm plays across the entire audio, and only the
+// next response's express_feeling can change it. No queueing / min-hold.
+function setFace(name) {
+  if (!FACES[name]) return;
+  if (name === curFace || (tr && tr.next === name)) return;
+  tr = { t0: performance.now(), swapped: false, next: name };
+  setRead(FACES[name].read);
+}
+function setMode(m) {
+  if (m === mode) return;
+  mode = m;
+  from = cur ? { ...cur } : targets();
+  tgt = targets();
+  tFrom = performance.now();
+}
+
+const t0 = performance.now();
+function frame(now) {
+  const t = (now - t0) / 1000;
+  const k = Math.min(1, (now - tFrom) / TR), e = easeIO(k), p = {};
+  for (const key in tgt) {
+    const f0 = (from[key] !== undefined ? from[key] : tgt[key]);
+    p[key] = f0 + (tgt[key] - f0) * e;
+  }
+  cur = p;
+
+  const ph = t * 2 * Math.PI / p.period;
+  let sx = 1, sy = 1, dy = p.sink, rot = p.tilt;
+  if (p.hop > 0.5) {
+    const g = Math.abs(Math.sin(ph));
+    dy -= p.hop * Math.pow(g, 0.62);
+    sx = 1 + p.squash * (1 - g) - p.inflate * g * 0.4;
+    sy = 1 - p.squash * (1 - g) + p.inflate * g;
+    rot += p.sway * Math.sin(ph * 0.5);
+  } else {
+    const b = Math.sin(ph);
+    dy -= p.bob * b;
+    sy = 1 + p.inflate * b;
+    sx = 1 + p.squash * Math.sin(ph - 0.35);
+    rot += p.sway * Math.sin(ph * 0.6);
+  }
+  if (p.talk > 0.05) {
+    const sp = (Math.sin(t*8.4)*.62 + Math.sin(t*5.1+1.1)*.38) * p.talk;
+    dy += sp*3.4; sy += sp*0.030; rot += sp*1.5;
+  }
+  if (p.think > 0.05) {
+    const w = Math.sin(t*2*Math.PI/1.9) * p.think;
+    rot += w*5.0; dy += Math.sin(t*2*Math.PI/0.95)*1.4*p.think;
+  }
+  grp.setAttribute('transform',
+    'translate(100,118) translate(0,'+dy.toFixed(2)+') rotate('+rot.toFixed(2)+
+    ') scale('+sx.toFixed(4)+','+sy.toFixed(4)+') translate(-100,-118)');
+
+  let lid = 1, eOp = 1, fOp = 0, xOp = 1;
+  if (tr) {
+    const d = now - tr.t0;
+    if (d < T_OUT) {
+      const u = d / T_OUT;
+      lid = 1 - (1 - 0.06) * easeIn(u);
+      eOp = u < .7 ? 1 : 1 - (u - .7) / .3;
+      fOp = u < .7 ? 0 : (u - .7) / .3;
+      xOp = Math.max(0, 1 - u / 0.6);
+    } else if (d < T_OUT + T_HOLD) {
+      lid = 0.06; eOp = 0; fOp = 1; xOp = 0;
+      if (!tr.swapped) { curFace = tr.next; paint(curFace); tr.swapped = true; }
+    } else if (d < T_OUT + T_HOLD + T_IN) {
+      const v = (d - T_OUT - T_HOLD) / T_IN;
+      lid = 0.06 + (1 - 0.06) * easeOutBack(Math.min(1, v));
+      eOp = Math.min(1, v / .25);
+      fOp = Math.max(0, 1 - v / .25);
+      xOp = Math.max(0, (v - 0.35) / 0.65);
+    } else { tr = null; nextBlink = now + 4000 + Math.random()*3000; }
+  } else {
+    if (!nextBlink) nextBlink = now + 4000 + Math.random()*3000;
+    if (now > nextBlink) { blinkT = now; nextBlink = now + 4000 + Math.random()*3000; }
+    const bd = now - blinkT;
+    if (bd < 170) { const q = bd / 170; lid = 1 - 0.94 * Math.sin(q * Math.PI); }
+  }
+  gEyes.setAttribute('transform', 'translate(0,'+Y+') scale(1,'+lid.toFixed(3)+') translate(0,'+(-Y)+')');
+  gEyes.setAttribute('opacity', eOp.toFixed(2));
+  gFlat.setAttribute('opacity', fOp.toFixed(2));
+  gExtra.setAttribute('opacity', xOp.toFixed(2));
+
+  requestAnimationFrame(frame);
+}
+paint('resting'); setRead('low'); requestAnimationFrame(frame);
+
+const cloud = { setFace, setMode };
+
+
+/* ==============================================================
+   Screen state + copy
+   ============================================================== */
+const line = $('line'), sub = $('sub'), actions = $('actions'),
+      timer = $('timer'), errBox = $('err'),
+      audioEl = $('remoteAudio'), statusEl = $('status');
+
+const COPY = {
+  gate:       { line: 'Hey there.',       sub: 'Enter your code.' },
+  home:       { line: 'Hey there.',       sub: 'Tap when you want to talk.' },
+  connecting: { line: 'One second.',      sub: 'Connecting.' },
+  listening:  { line: "I'm listening.",   sub: 'Take as long as you want.' },
+  analyzing:  { line: 'Reading that…',    sub: 'One second.' },
+};
+
+function setCopy(k) {
+  line.style.opacity = 0; sub.style.opacity = 0;
+  setTimeout(() => {
+    line.textContent = COPY[k].line;
+    sub.textContent  = COPY[k].sub;
+    line.style.opacity = 1; sub.style.opacity = 1;
+  }, 260);
+}
+function setActions(kind) {
+  actions.innerHTML = '';
+  if (kind === 'gate') {
+    const form = document.createElement('form');
+    form.className = 'code-form';
+    form.innerHTML = `
+      <input class="code-input" id="codeInput" type="text" inputmode="numeric"
+             maxlength="12" autocomplete="one-time-code" placeholder="code" />
+      <button class="btn-primary" type="submit">Continue</button>
+      <div class="code-err" id="codeErr"></div>
+    `;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const inp = form.querySelector('#codeInput');
+      const err = form.querySelector('#codeErr');
+      const code = inp.value.trim();
+      err.textContent = '';
+      if (!code) { err.textContent = 'enter your code'; return; }
+      try {
+        const r = await fetch('/verify-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok && j.ok) {
+          accessCode = code;
+          localStorage.setItem('heythere_code', code);
+          setCopy('home'); setActions('home');
+        } else {
+          err.textContent = "that code doesn't match";
+          inp.select();
+        }
+      } catch (e) { err.textContent = 'network error'; }
+    });
+    actions.appendChild(form);
+    setTimeout(() => form.querySelector('#codeInput')?.focus(), 100);
+  } else if (kind === 'home') {
+    const b = document.createElement('button');
+    b.className = 'btn-primary'; b.textContent = 'Tap to talk';
+    b.addEventListener('click', startCall);
+    actions.appendChild(b);
+  } else if (kind === 'connecting') {
+    const b = document.createElement('button');
+    b.className = 'btn-primary'; b.disabled = true; b.textContent = 'Connecting…';
+    actions.appendChild(b);
+  } else if (kind === 'call') {
+    const b = document.createElement('button');
+    b.className = 'btn-quiet'; b.textContent = 'End call';
+    b.addEventListener('click', endCall);
+    actions.appendChild(b);
+  }
+}
+const fmt = (sec) => String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0');
+let startedAt = 0, tickId = null;
+function startTimer() {
+  startedAt = Date.now(); timer.classList.add('on'); timer.textContent = '00:00';
+  tickId = setInterval(() => timer.textContent = fmt(Math.floor((Date.now()-startedAt)/1000)), 500);
+}
+function stopTimer() { timer.classList.remove('on'); if (tickId) { clearInterval(tickId); tickId = null; } }
+function showError(msg) {
+  errBox.textContent = msg;
+  setTimeout(() => { if (errBox.textContent === msg) errBox.textContent = ''; }, 6000);
+}
+
+
+/* ==============================================================
+   Status strip — always-visible emoji + measurements
+   ============================================================== */
+const statusEmoji = $('statusEmoji'),
+      mPace = $('mPace'), mPause = $('mPause'), mPitch = $('mPitch'), mValence = $('mValence'),
+      zPace = $('zPace'), zPause = $('zPause'), zPitch = $('zPitch'),
+      statusNotes = $('statusNotes'),
+      contextLine = $('contextLine'),
+      ctxLoc = $('ctxLoc'), ctxTime = $('ctxTime'), ctxWx = $('ctxWx'),
+      ctxSunset = $('ctxSunset'), ctxSunsetDot = $('ctxSunsetDot');
+
+function renderContextLine(ui) {
+  const setPart = (el, val) => {
+    el.textContent = val || '';
+    el.classList.toggle('empty', !val);
+  };
+  setPart(ctxLoc, ui.location);
+  setPart(ctxTime, ui.time);
+  setPart(ctxWx, ui.weather);
+  setPart(ctxSunset, ui.sunset);
+  ctxSunsetDot.classList.toggle('empty', !ui.sunset);
+  contextLine.style.display = 'block';
+}
+
+const USER_FEELING_EMOJI = {
+  happy: '😊', concerned: '😟', sad: '😢', unsure: '🤨',
+  unknown: '😐',  // no read yet — user hasn't spoken
+};
+const DEFAULT_EMOJI = '😐';
+
+const state = {
+  pitchSpread: 0,
+  pauseRatio: 0,
+  longPausesPerMin: 0,
+  rate: 0,
+  valence: null,
+  baseline: null,
+  lastAiRead: null,
+  turnsCount: 0,
+};
+
+function fmtNum(n, d = 2) { return Number.isFinite(n) ? n.toFixed(d) : '—'; }
+function fmtZ(z) { return z === null || z === undefined ? '' : (z >= 0 ? '+' : '') + z.toFixed(1) + 'σ'; }
+
+function renderPanel() {
+  // Emoji from AI's user_feeling
+  const emoji = state.lastAiRead
+    ? (USER_FEELING_EMOJI[state.lastAiRead.user_feeling] || DEFAULT_EMOJI)
+    : DEFAULT_EMOJI;
+  statusEmoji.textContent = emoji;
+
+  // Raw numbers
+  mPace.innerHTML = state.rate
+    ? (fmtNum(state.rate * 60, 0) + ' <span style="opacity:.5">wpm</span>')
+    : '—';
+  mPause.textContent   = state.pauseRatio ? (fmtNum(state.pauseRatio * 100, 0) + '%') : '—';
+  mPitch.innerHTML     = state.pitchSpread
+    ? (fmtNum(state.pitchSpread, 1) + ' <span style="opacity:.5">st</span>')
+    : '—';
+  mValence.textContent = state.valence === null
+    ? '—'
+    : (state.valence >= 0 ? '+' : '') + state.valence.toFixed(2);
+
+  // Z-scores + notes
+  const ready = state.baseline && state.baseline.turns.length >= 3;
+  if (!ready) {
+    zPace.textContent = zPause.textContent = zPitch.textContent = '';
+    if (state.baseline) {
+      statusNotes.className = 'status-notes baseline';
+      statusNotes.textContent = `still learning your normal · ${state.baseline.turns.length}/3 turns`;
+      statusNotes.style.display = 'block';
+    } else {
+      statusNotes.style.display = 'none';
+    }
+    return;
+  }
+  const z = computeZ(
+    { rate: state.rate, pauseRatio: state.pauseRatio, pitchSpread: state.pitchSpread },
+    state.baseline
+  ).z || {};
+  zPace.textContent  = fmtZ(z.rate);
+  zPause.textContent = fmtZ(z.pauseRatio);
+  zPitch.textContent = fmtZ(z.pitchSpread);
+  const eZ = energy(z);
+  const isMismatch = state.valence !== null && mismatchFlag(eZ, state.valence);
+  if (isMismatch) {
+    statusNotes.className = 'status-notes mismatch';
+    statusNotes.textContent = `numbers say mismatch — voice energy ${eZ.toFixed(1)}σ, valence ${state.valence.toFixed(2)}`;
+    statusNotes.style.display = 'block';
+  } else {
+    statusNotes.style.display = 'none';
+  }
+}
+
+
+/* ==============================================================
+   Real-world context — Geolocation + Open-Meteo + reverse geocode.
+   All keyless, CORS-friendly, browser-callable. Runs in parallel with
+   the token mint so it doesn't add serial latency.
+   ============================================================== */
+const WMO_CODES = {
+  0: 'clear', 1: 'mostly clear', 2: 'partly cloudy', 3: 'overcast',
+  45: 'foggy', 48: 'foggy',
+  51: 'light drizzle', 53: 'drizzle', 55: 'heavy drizzle',
+  56: 'freezing drizzle', 57: 'freezing drizzle',
+  61: 'light rain', 63: 'rain', 65: 'heavy rain',
+  66: 'freezing rain', 67: 'freezing rain',
+  71: 'light snow', 73: 'snow', 75: 'heavy snow', 77: 'snow',
+  80: 'rain showers', 81: 'rain showers', 82: 'heavy showers',
+  85: 'snow showers', 86: 'snow showers',
+  95: 'thunderstorm', 96: 'thunderstorm with hail', 99: 'severe thunderstorm',
+};
+const wmoDescribe = (code, isDay) => {
+  const d = WMO_CODES[code] ?? 'unclear conditions';
+  return isDay === 0 ? d + ' (nighttime)' : d;
+};
+
+async function getContext() {
+  const now = new Date();
+  const dow  = now.toLocaleDateString('en-US', { weekday: 'long' });
+  const dowShort = now.toLocaleDateString('en-US', { weekday: 'short' });
+  const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+  let location = null, weather = null;
+
+  try {
+    const pos = await new Promise((resolve, reject) => {
+      if (!navigator.geolocation) return reject(new Error('geolocation not available'));
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        timeout: 6000, maximumAge: 5 * 60 * 1000, enableHighAccuracy: false,
+      });
+    });
+    const lat = pos.coords.latitude.toFixed(4);
+    const lon = pos.coords.longitude.toFixed(4);
+    dbg.log('meta', 'geolocation.ok', { lat, lon, accuracy: Math.round(pos.coords.accuracy) });
+
+    const weatherUrl =
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&current=temperature_2m,weather_code,is_day` +
+      `&hourly=weather_code,precipitation_probability&forecast_hours=4` +
+      `&daily=sunset` +
+      `&temperature_unit=fahrenheit&timezone=auto`;
+    const geoUrl =
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+
+    dbg.log('out', 'GET open-meteo');
+    dbg.log('out', 'GET bigdatacloud');
+    const [w, g] = await Promise.allSettled([
+      fetch(weatherUrl).then(r => r.json()),
+      fetch(geoUrl).then(r => r.json()),
+    ]);
+    if (w.status === 'fulfilled') {
+      weather = w.value;
+      dbg.log('in', 'weather.ok', { temp: weather.current?.temperature_2m, code: weather.current?.weather_code });
+    } else {
+      dbg.log('err', 'weather.fail', { message: String(w.reason) });
+    }
+    if (g.status === 'fulfilled') {
+      location = { city: g.value.city, region: g.value.principalSubdivision, country: g.value.countryName };
+      dbg.log('in', 'geocode.ok', location);
+    } else {
+      dbg.log('err', 'geocode.fail', { message: String(g.reason) });
+    }
+  } catch (e) {
+    dbg.log('err', 'geolocation.denied', { name: e.name, message: e.message });
+  }
+
+  // Build both the AI-facing text and a compact UI object for on-screen display.
+  // UI is one line:  Location · Weekday, Time · Weather · Sunset time
+  // Location format: "City, State" for US; just "City" for everywhere else
+  // (the "City, State" convention is a US thing; adding a Chinese province
+  // like "Shanghai, Shanghai" or "Chengdu, Sichuan" reads weirdly).
+  const ui = { location: '', time: `${dowShort}, ${time}`, weather: '', sunset: '' };
+  let text = `[context] local time: ${dow} ${time}.`;
+  if (location?.city) {
+    const isUS = location.country === 'United States of America' || location.country === 'United States';
+    const loc = isUS && location.region
+      ? `${location.city}, ${location.region}`
+      : location.city;
+    ui.location = loc;
+    text += ` user is in ${loc}${isUS ? '' : ', ' + (location.country || '')}.`;
+  }
+  if (weather?.current) {
+    const c = weather.current;
+    const desc = wmoDescribe(c.weather_code, c.is_day);
+    ui.weather = `${Math.round(c.temperature_2m)}°F, ${desc}`;
+    text += ` weather now: ${desc}, ${Math.round(c.temperature_2m)}°F.`;
+    if (weather.hourly?.weather_code?.length) {
+      const rains = (weather.hourly.precipitation_probability || []).slice(0, 4);
+      const maxRain = rains.length ? Math.max(...rains) : 0;
+      const codes = weather.hourly.weather_code.slice(0, 4);
+      const endDesc = wmoDescribe(codes[codes.length - 1], c.is_day);
+      text += ` next 4 hours: trending ${endDesc}` + (maxRain > 30 ? `, up to ${maxRain}% rain` : '') + '.';
+    }
+    if (weather.daily?.sunset?.[0]) {
+      const sunset = new Date(weather.daily.sunset[0]);
+      const s = sunset.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      ui.sunset = `Sunset ${s}`;
+      text += ` sunset at ${s}.`;
+    }
+  }
+  if (!location && !weather) {
+    text += ' (location and weather unavailable — user declined location access or offline).';
+  }
+  dbg.log('meta', 'context', { text });
+  return { text, ui };
+}
+
+
+/* ==============================================================
+   Call lifecycle — audio tee + WebRTC + tracking
+   ============================================================== */
+let pc = null, mic = null, dc = null;
+let audioCtx = null, tracker = null;
+let fullRecorder = null, fullChunks = [];
+let turnRecorder = null, turnChunks = [];
+let callStartAt = 0;
+
+let accessCode = '';
+const authHeaders = () => accessCode ? { 'x-access-code': accessCode } : {};
+
+// Speech / turn timing (from Realtime events)
+let userSpeechStart = 0;
+let userSpeakingSpanSec = 0;   // total ms user was speaking this turn
+let userTurnGapMs = 0;
+let userTurnLongPauses = 0;
+let currentResponseCallId = null;
+let pendingFeeling = null;
+
+// Silence & hangup control
+const SILENCE_MS = 8000;
+const MAX_STRIKES = 3;
+let silenceTimer = null;
+let silenceStrikes = 0;
+let waitingForUser = false;
+let endingCall = false;
+let endCallReason = null;
+let teardownScheduled = false;
+
+function cancelSilenceTimer() {
+  if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
+}
+function startSilenceTimer() {
+  cancelSilenceTimer();
+  if (endingCall || teardownScheduled) return;
+  silenceTimer = setTimeout(onSilenceTick, SILENCE_MS);
+}
+function onSilenceTick() {
+  silenceTimer = null;
+  if (endingCall || !dc || dc.readyState !== 'open') return;
+  silenceStrikes++;
+  const terminal = silenceStrikes >= MAX_STRIKES;
+  const note = terminal
+    ? '[silence: user has not responded three times in a row — say a warm brief goodbye and call end_call with reason "unresponsive"]'
+    : `[silence: user did not respond for 8 seconds (${silenceStrikes}/${MAX_STRIKES}) — prompt gently once, briefly]`;
+  dbg.log('meta', 'silence.strike', { strike: silenceStrikes, terminal });
+  dc.send(JSON.stringify({
+    type: 'conversation.item.create',
+    item: {
+      type: 'message', role: 'system',
+      content: [{ type: 'input_text', text: note }],
+    },
+  }));
+  dc.send(JSON.stringify({ type: 'response.create' }));
+  dbg.log('out', 'dc.silence.reminder', { strike: silenceStrikes });
+}
+
+// Reset per-turn state
+function resetTurn() {
+  userSpeechStart = 0;
+  userSpeakingSpanSec = 0;
+  userTurnGapMs = 0;
+  userTurnLongPauses = 0;
+}
+
+let contextPromise = null;
+
+async function startCall() {
+  errBox.textContent = '';
+  setActions('connecting'); setCopy('connecting');
+  cloud.setFace('attentive');
+  dbg.reset();
+  dbg.log('meta', 'call.start');
+
+  // Fire location + weather in parallel with token mint. May take ~1-3s.
+  contextPromise = getContext();
+
+  try {
+    // Token
+    dbg.log('out', 'POST /realtime-token');
+    const tokRes = await fetch('/realtime-token', { method: 'POST', headers: authHeaders() });
+    if (!tokRes.ok) throw new Error('token: ' + tokRes.status + ' ' + await tokRes.text());
+    const tok = await tokRes.json();
+    const ephemeral = tok.value || tok.client_secret?.value;
+    const model = tok.session?.model || 'gpt-realtime';
+    if (!ephemeral) throw new Error('token: no client secret in response');
+    dbg.log('in', 'token.minted', { model, hasSecret: true, tools: tok.session?.tools?.map(t => t.name) });
+
+    // Peer connection
+    pc = new RTCPeerConnection();
+    // Explicit audio transceiver: guarantees a recvonly-capable m-line for the AI voice.
+    pc.addTransceiver('audio', { direction: 'sendrecv' });
+    pc.oniceconnectionstatechange = () => dbg.log('meta', 'ice.state=' + pc.iceConnectionState);
+    pc.onconnectionstatechange    = () => dbg.log('meta', 'pc.state='  + pc.connectionState);
+    pc.ontrack = (ev) => {
+      dbg.log('in', 'pc.ontrack', {
+        trackKind: ev.track?.kind,
+        trackId:   ev.track?.id,
+        streamCount: ev.streams?.length,
+        readyState:  ev.track?.readyState,
+      });
+      audioEl.srcObject = ev.streams[0];
+      // Explicit play() so we can catch autoplay-block promise rejections.
+      const p = audioEl.play();
+      if (p && p.catch) {
+        p.then(() => dbg.log('meta', 'audio.play.ok'))
+         .catch(err => {
+           dbg.log('err', 'audio.play.rejected', { name: err.name, message: err.message });
+           showError('audio blocked: ' + err.message);
+         });
+      }
+    };
+
+    // Mic — one stream, three consumers
+    mic = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+    });
+    dbg.log('meta', 'mic.acquired', { tracks: mic.getTracks().map(t => t.label) });
+    for (const t of mic.getTracks()) pc.addTrack(t, mic);
+
+    // Audio context for pitch (NOT connected to destination — feedback otherwise)
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioCtx.createMediaStreamSource(mic);
+    tracker = new PitchTracker({
+      ctx: audioCtx, source,
+      onFrame: (f) => {
+        if (f.voiced) {
+          state.pitchSpread = f.spread;
+          renderPanel();
+        }
+      },
+    });
+    tracker.start();
+
+    // Full-call recorder
+    fullChunks = [];
+    fullRecorder = new MediaRecorder(mic, { mimeType: pickMime() });
+    fullRecorder.ondataavailable = (e) => { if (e.data.size) fullChunks.push(e.data); };
+    fullRecorder.start();
+
+    // Data channel
+    dc = pc.createDataChannel('oai-events');
+    dc.addEventListener('message', onServerEvent);
+    dc.addEventListener('open', async () => {
+      dbg.log('meta', 'dc.open');
+      // Wait for the real-world context (location, weather, time) then inject
+      // it BEFORE the kickoff message. This is what makes the suggestion adapt
+      // to actual weather instead of the fabricated south-Florida default.
+      const context = await contextPromise.catch(() => null);
+      if (context?.text) {
+        dc.send(JSON.stringify({
+          type: 'conversation.item.create',
+          item: {
+            type: 'message', role: 'system',
+            content: [{ type: 'input_text', text: context.text }],
+          },
+        }));
+        dbg.log('out', 'dc.context.injected');
+        if (context.ui) renderContextLine(context.ui);
+      }
+      // Cloud initiates: inject a system hint, then trigger a response.
+      dc.send(JSON.stringify({
+        type: 'conversation.item.create',
+        item: {
+          type: 'message', role: 'system',
+          content: [{ type: 'input_text', text: '[call just connected — user is on the other end but has not spoken yet. Open the check-in now with a warm specific greeting.]' }],
+        },
+      }));
+      dc.send(JSON.stringify({ type: 'response.create' }));
+      dbg.log('out', 'dc.initiate');
+    });
+    dc.addEventListener('close', () => dbg.log('meta', 'dc.close'));
+    dc.addEventListener('error', (e) => dbg.log('err', 'dc.error', { message: String(e) }));
+
+    // SDP
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    dbg.log('out', 'sdp.offer', { sdpBytes: offer.sdp.length });
+    const sdpRes = await fetch('https://api.openai.com/v1/realtime/calls?model=' + encodeURIComponent(model), {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + ephemeral, 'Content-Type': 'application/sdp' },
+      body: offer.sdp,
+    });
+    if (!sdpRes.ok) throw new Error('sdp: ' + sdpRes.status + ' ' + await sdpRes.text());
+    const answerSdp = await sdpRes.text();
+    dbg.log('in', 'sdp.answer', { sdpBytes: answerSdp.length });
+    await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
+
+    // Live
+    callStartAt = Date.now();
+    setActions('call'); setCopy('listening');
+    cloud.setFace('calm'); cloud.setMode('listening');
+    startTimer();
+    statusEl.style.display = 'flex';
+    // Load baseline once
+    getBaseline().then(b => { state.baseline = b; state.turnsCount = b.turns.length; renderPanel(); });
+    resetTurn();
+    renderPanel();
+  } catch (e) {
+    console.error(e);
+    showError(String(e.message || e));
+    await teardown();
+    setActions('home'); setCopy('home'); cloud.setFace('resting');
+  }
+}
+
+function pickMime() {
+  const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'];
+  for (const m of candidates) if (MediaRecorder.isTypeSupported(m)) return m;
+  return '';
+}
+
+let responseHadAudio = false;
+let responseHadFunctionCall = false;
+let modelTranscript = '';
+const pendingToolNames = {}; // call_id -> tool name
+
+async function onServerEvent(ev) {
+  let msg; try { msg = JSON.parse(ev.data); } catch { return; }
+  dbg.log('in', 'dc.' + msg.type, summarizeRealtimeEvent(msg));
+
+  switch (msg.type) {
+    /* -------- user speaking -------- */
+    case 'input_audio_buffer.speech_started': {
+      cancelSilenceTimer();
+      silenceStrikes = 0;
+      waitingForUser = false;
+      cloud.setFace('attentive');
+      const now = performance.now();
+      if (userSpeechStart === 0) startTurnRecorder();
+      else {
+        const gap = (now - userSpeechStart) / 1000;
+        if (gap > 0.30) userTurnGapMs += gap * 1000;
+        if (gap > 1.0)  userTurnLongPauses++;
+      }
+      userSpeechStart = now;
+      break;
+    }
+    case 'input_audio_buffer.speech_stopped': {
+      const now = performance.now();
+      const dur = (now - userSpeechStart) / 1000;
+      if (dur > 0) userSpeakingSpanSec += dur;
+      userSpeechStart = now;
+      const totalTurn = userSpeakingSpanSec + userTurnGapMs/1000;
+      state.pauseRatio = totalTurn > 0 ? (userTurnGapMs/1000) / totalTurn : 0;
+      state.longPausesPerMin = totalTurn > 0 ? userTurnLongPauses / (totalTurn/60) : 0;
+      renderPanel();
+      break;
+    }
+    case 'input_audio_buffer.committed': {
+      stopTurnRecorderAndAnalyze();
+      break;
+    }
+
+    /* -------- model response lifecycle -------- */
+    case 'response.created':
+      cancelSilenceTimer();
+      pendingFeeling = null;
+      currentResponseCallId = null;
+      responseHadAudio = false;
+      responseHadFunctionCall = false;
+      modelTranscript = '';
+      cloud.setMode('listening');
+      break;
+
+    case 'response.output_item.added':
+      if (msg.item?.type === 'function_call') {
+        pendingToolNames[msg.item.call_id] = msg.item.name;
+        if (msg.item.name === 'express_feeling') {
+          currentResponseCallId = msg.item.call_id;
+          responseHadFunctionCall = true;
+        }
+      }
+      break;
+
+    case 'response.function_call_arguments.done': {
+      let args = null; try { args = JSON.parse(msg.arguments); } catch {}
+      const callId = msg.call_id || currentResponseCallId;
+      const name = pendingToolNames[callId] || msg.name;
+
+      if (name === 'express_feeling') {
+        if (args && FACES[args[args.primary + '_feeling']]) {
+          pendingFeeling = args;
+          state.lastAiRead = args;
+          cloud.setFace(args[args.primary + '_feeling']);
+          renderPanel();
+        }
+      } else if (name === 'end_call') {
+        endingCall = true;
+        endCallReason = args?.reason || 'complete';
+        dbg.log('meta', 'end_call.requested', { reason: endCallReason });
+      }
+
+      // Ack the tool call so the model can continue.
+      if (callId && dc?.readyState === 'open') {
+        dc.send(JSON.stringify({
+          type: 'conversation.item.create',
+          item: { type: 'function_call_output', call_id: callId, output: '{"ok":true}' },
+        }));
+        dbg.log('out', 'dc.conversation.item.create', { call_id: callId, name, output: '{"ok":true}' });
+      }
+      break;
+    }
+
+    case 'response.output_audio.delta':
+    case 'response.audio.delta':
+      // Not emitted over WebRTC (audio goes over the media track). Kept for WS fallback.
+      cloud.setMode('talking');
+      break;
+
+    case 'response.output_audio_transcript.delta':
+      modelTranscript += (msg.delta || '');
+      cloud.setMode('talking');
+      break;
+
+    case 'response.output_audio.done':
+    case 'response.audio.done':
+      // Server done GENERATING audio, but WebRTC audio is still playing out.
+      // DO NOT drop the talking overlay here — that would freeze the head-nod
+      // before the user has finished hearing the AI. Only output_audio_buffer.stopped
+      // (which fires when the client-side audio buffer actually drains) is
+      // allowed to switch mode back to 'listening'.
+      break;
+
+    // WebRTC-only events: fire when the server's output audio buffer starts/drains.
+    // These are the correct signals for "AI is actually speaking / done speaking".
+    case 'output_audio_buffer.started':
+      cloud.setMode('talking');
+      break;
+
+    case 'output_audio_buffer.stopped':
+      cloud.setMode('listening');
+      dbg.log('meta', 'output_audio_buffer.stopped');
+      if (endingCall && !teardownScheduled) {
+        teardownScheduled = true;
+        cancelSilenceTimer();
+        // Small tail delay for client-side jitter buffer / Opus decoder latency.
+        dbg.log('meta', 'teardown.scheduled', { in_ms: 600, reason: endCallReason });
+        setTimeout(endCall, 600);
+        break;
+      }
+      waitingForUser = true;
+      startSilenceTimer();
+      break;
+
+    case 'output_audio_buffer.cleared':
+      dbg.log('meta', 'output_audio_buffer.cleared');
+      break;
+
+    case 'response.cancelled':
+      dbg.log('meta', 'response.cancelled', { status: msg.response?.status });
+      break;
+
+    case 'response.done': {
+      // In WebRTC mode we must read audio presence from response.output items,
+      // NOT from delta events (which don't fire). This detection is the fix for
+      // the "audio cutoff" bug: previously we always thought there was no audio,
+      // and fired a duplicate follow-up response.create that overlapped playback.
+      const output = msg.response?.output || [];
+      const hadAudio = output.some(i =>
+        i.type === 'message' && (i.content || []).some(c => c.type === 'output_audio')
+      );
+      const hadFunctionCall = output.some(i => i.type === 'function_call');
+
+      // NOTE: do NOT call cloud.setMode('listening') here. Server-side
+      // 'response.done' fires while audio is still draining on the client;
+      // the correct place to drop the talking overlay is
+      // output_audio_buffer.stopped. Doing it here freezes the nod early.
+      if (!pendingFeeling && !hadAudio) cloud.setFace('calm');
+
+      dbg.log('meta', 'response.summary', {
+        hadAudio, hadFunctionCall,
+        outputCount: output.length,
+        status: msg.response?.status,
+        transcript: modelTranscript || null,
+      });
+
+      // If ending: normally output_audio_buffer.stopped handles teardown when
+      // the goodbye audio finishes draining. BUT if the AI called end_call in
+      // a response with NO audio content, that event will never fire — so we
+      // schedule teardown directly from here as a fallback.
+      if (endingCall && !teardownScheduled) {
+        if (!hadAudio) {
+          teardownScheduled = true;
+          cancelSilenceTimer();
+          dbg.log('meta', 'teardown.scheduled', { in_ms: 200, reason: endCallReason, path: 'response.done (no audio fallback)' });
+          setTimeout(endCall, 200);
+        }
+        // If hadAudio: let output_audio_buffer.stopped handle it (fires after playback drains).
+        break;
+      }
+
+      if (!hadAudio) {
+        if (hadFunctionCall && dc?.readyState === 'open') {
+          dc.send(JSON.stringify({
+            type: 'response.create',
+            response: { tool_choice: 'none' },
+          }));
+          dbg.log('out', 'dc.response.create', { reason: 'response had function_call but no audio content' });
+        } else {
+          // Edge case: no audio, no function call. Just start silence timer.
+          waitingForUser = true;
+          startSilenceTimer();
+        }
+      }
+      // If hadAudio, defer silence timer until output_audio_buffer.stopped fires.
+      break;
+    }
+
+    case 'error':
+      dbg.log('err', 'dc.error', msg);
+      showError(msg.error?.message || 'realtime error');
+      break;
+
+    default:
+      break;
+  }
+}
+
+function startTurnRecorder() {
+  try {
+    turnChunks = [];
+    turnRecorder = new MediaRecorder(mic, { mimeType: pickMime() });
+    turnRecorder.ondataavailable = (e) => { if (e.data.size) turnChunks.push(e.data); };
+    turnRecorder.start();
+  } catch (e) { console.warn('turn recorder failed:', e); }
+}
+
+function stopTurnRecorderAndAnalyze() {
+  if (!turnRecorder) return;
+  const rec = turnRecorder;
+  turnRecorder = null;
+  rec.onstop = async () => {
+    if (!turnChunks.length) return;
+    const blob = new Blob(turnChunks, { type: rec.mimeType || 'audio/webm' });
+    turnChunks = [];
+
+    const pitchSummary = tracker ? tracker.summarize() : { spread: 0, medianHz: 0 };
+    dbg.log('meta', 'turn.end', { audioBytes: blob.size, mimeType: blob.type, pitchSpread: pitchSummary.spread });
+
+    // Kick off transcription
+    let whisper = null;
+    try {
+      dbg.log('out', 'POST /transcribe', { bytes: blob.size });
+      const wRes = await fetch('/transcribe', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': blob.type || 'audio/webm' },
+        body: blob,
+      });
+      if (wRes.ok) {
+        whisper = await wRes.json();
+        dbg.log('in', 'transcribe.ok', {
+          text: whisper.text,
+          wordCount: whisper.words?.length || 0,
+        });
+      } else {
+        dbg.log('err', 'transcribe.fail', { status: wRes.status, body: await wRes.text() });
+      }
+    } catch (e) { dbg.log('err', 'transcribe.err', { message: String(e) }); }
+
+    const feats = whisper ? featuresFromWhisper(whisper) : null;
+    const transcript = whisper?.text || '';
+    let valence = null;
+    if (transcript.trim()) {
+      try {
+        dbg.log('out', 'POST /valence', { transcript });
+        const vRes = await fetch('/valence', {
+          method: 'POST',
+          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcript }),
+        });
+        if (vRes.ok) {
+          const vj = await vRes.json();
+          valence = vj.valence;
+          dbg.log('in', 'valence.ok', vj);
+        } else {
+          dbg.log('err', 'valence.fail', { status: vRes.status, body: await vRes.text() });
+        }
+      } catch (e) { dbg.log('err', 'valence.err', { message: String(e) }); }
+    }
+
+    // Update state with real numbers now that whisper is back
+    if (feats) {
+      state.rate = feats.rate;
+      state.pauseRatio = feats.pauseRatio;
+      state.longPausesPerMin = feats.spanSec > 0 ? feats.longPauses / (feats.spanSec/60) : 0;
+    }
+    state.pitchSpread = pitchSummary.spread || state.pitchSpread;
+    state.valence = valence !== null ? valence : state.valence;
+
+    // Push turn into baseline (only if we got meaningful features)
+    if (feats && feats.wordCount >= 3) {
+      const b = await pushTurn({
+        rate: feats.rate,
+        pauseRatio: feats.pauseRatio,
+        pitchSpread: pitchSummary.spread,
+        valence: valence,
+        wordCount: feats.wordCount,
+        transcript,
+      });
+      state.baseline = b;
+      state.turnsCount = b.turns.length;
+    }
+    // Reset pitch tracker's rolling window for next turn (keep call median stable)
+    if (tracker) tracker.recent = [];
+    resetTurn();
+    renderPanel();
+  };
+  try { rec.stop(); } catch {}
+}
+
+async function teardown() {
+  stopTimer();
+  try { tracker && tracker.stop(); } catch {}
+  try { if (turnRecorder && turnRecorder.state !== 'inactive') turnRecorder.stop(); } catch {}
+  try { if (fullRecorder && fullRecorder.state !== 'inactive') fullRecorder.stop(); } catch {}
+  // Save full recording + captured event log so we can backtrack later.
+  const callId = 'call_' + callStartAt;
+  if (fullChunks.length) {
+    const blob = new Blob(fullChunks, { type: fullRecorder?.mimeType || 'audio/webm' });
+    const durationSec = Math.max(0, (Date.now() - callStartAt) / 1000);
+    try {
+      await saveRecording({
+        id: callId,
+        at: callStartAt,
+        durationSec,
+        mime: blob.type,
+        blob,
+        events: dbg.snapshot(),
+      });
+      dbg.log('meta', 'recording.saved', { id: callId, bytes: blob.size, eventCount: dbg.events.length });
+    } catch (e) {
+      dbg.log('err', 'recording.save.failed', { message: String(e) });
+    }
+  }
+  // Also try to persist the event log to disk on the server. No-op on static hosts.
+  if (dbg.events.length && window.persistLogToServer) {
+    window.persistLogToServer(callId, dbg.snapshot()).catch(() => {});
+  }
+  fullChunks = []; turnChunks = [];
+  try { dc && dc.close(); } catch {}
+  try { pc && pc.close(); } catch {}
+  try { mic && mic.getTracks().forEach(t => t.stop()); } catch {}
+  try { audioCtx && audioCtx.close(); } catch {}
+  dc = pc = mic = audioCtx = tracker = fullRecorder = turnRecorder = null;
+  audioEl.srcObject = null;
+}
+
+async function endCall() {
+  cancelSilenceTimer();
+  await teardown();
+  setActions('home'); setCopy('home');
+  cloud.setMode('listening'); cloud.setFace('resting');
+  statusEl.style.display = 'none';
+  contextLine.style.display = 'none';
+  // reset state visuals
+  state.pitchSpread = state.pauseRatio = state.rate = state.longPausesPerMin = 0;
+  state.valence = null; state.lastAiRead = null;
+  statusNotes.style.display = 'none';
+  // reset hangup state
+  endingCall = false; endCallReason = null;
+  teardownScheduled = false;
+  silenceStrikes = 0;
+  waitingForUser = false;
+}
+
+/* Boot: check for saved access code, otherwise show gate. */
+async function boot() {
+  const saved = localStorage.getItem('heythere_code') || '';
+  if (saved) {
+    try {
+      const r = await fetch('/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: saved }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.ok) {
+        accessCode = saved;
+        setCopy('home'); setActions('home');
+        return;
+      }
+      if (r.ok && j.gated === false) {
+        // Server has no gate configured — just proceed.
+        setCopy('home'); setActions('home');
+        return;
+      }
+      // Otherwise stale/wrong code
+      localStorage.removeItem('heythere_code');
+    } catch { /* offline — show gate */ }
+  }
+  setCopy('gate'); setActions('gate');
+}
+boot();
+
+/* Dev preview: `?preview=X` fills the strip with mock state for CSS iteration.
+   - preview=1 or preview=live → mid-call with a real read
+   - preview=opener → the opener state, before user has spoken
+   - preview=happy → show the happy hop rhythm (verify no top clipping) */
+const previewMode = new URLSearchParams(location.search).get('preview');
+if (previewMode === 'opener') {
+  statusEl.style.display = 'flex';
+  state.lastAiRead = { user_feeling: 'unknown', self_feeling: 'attentive', primary: 'self' };
+  renderPanel();
+  setCopy('listening');
+  timer.classList.add('on'); timer.textContent = '00:02';
+  cloud.setFace('attentive');
+  setActions('call');
+} else if (previewMode === 'happy') {
+  statusEl.style.display = 'flex';
+  renderContextLine({ location: 'Tampa, FL', time: 'Wed, 3:47 PM', weather: '82°F, partly cloudy', sunset: 'Sunset 7:36 PM' });
+  state.lastAiRead = { user_feeling: 'happy', self_feeling: 'delighted', primary: 'user' };
+  renderPanel();
+  setCopy('listening');
+  timer.classList.add('on'); timer.textContent = '00:22';
+  cloud.setFace('happy');
+  cloud.setMode('talking'); // <-- verify the nod overlay stays with the hop
+  setActions('call');
+} else if (previewMode) {
+  statusEl.style.display = 'flex';
+  renderContextLine({ location: 'Tampa, FL', time: 'Wed, 3:47 PM', weather: '82°F, partly cloudy', sunset: 'Sunset 7:36 PM' });
+  state.rate = 3.2;             // ~ 192 wpm
+  state.pauseRatio = 0.22;      // 22%
+  state.pitchSpread = 3.1;      // 3.1 st
+  state.valence = 0.15;
+  state.baseline = { user: 'default', turns: Array(5).fill({ rate: 3.6, pauseRatio: 0.08, pitchSpread: 6.4, valence: 0.3 }) };
+  state.lastAiRead = { user_feeling: 'unsure', self_feeling: 'thinking', primary: 'user' };
+  renderPanel();
+  setCopy('listening');
+  timer.classList.add('on'); timer.textContent = '00:38';
+  cloud.setFace('unsure');
+  setActions('call');
+}
+
+/* Optional: POST logs to /log if the server implements it. When the site is
+   served statically (GitHub Pages, etc.) the endpoint 404s and we silently
+   move on. Logs are also always saved with the recording in IndexedDB. */
+window.persistLogToServer = async function (callId, events) {
+  try {
+    const r = await fetch('/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify({ callId, at: callStartAt, events }),
+    });
+    if (!r.ok) return false;
+    dbg.log('meta', 'log.persisted', { callId, bytes: (await r.text()).length });
+    return true;
+  } catch { return false; }
+};
+</script>
+</body>
+</html>

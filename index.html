@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>hey_there</title>
+  <title>Hey There</title>
   <style>
     :root {
       --bg: #0f1419;
       --fg: #e8eef4;
+      --muted: #8b9aab;
       --accent: #5ec8ff;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -21,38 +22,44 @@
         radial-gradient(ellipse at 80% 80%, #1a2830 0%, transparent 45%),
         var(--bg);
       color: var(--fg);
-    }
-    main {
-      text-align: center;
       padding: 2rem;
     }
+    main { max-width: 32rem; text-align: center; }
     h1 {
-      font-size: clamp(2.5rem, 8vw, 4.5rem);
+      font-size: clamp(2.25rem, 7vw, 3.5rem);
       font-weight: 600;
       letter-spacing: -0.03em;
       margin-bottom: 0.75rem;
     }
-    p {
-      color: color-mix(in srgb, var(--fg) 65%, transparent);
-      font-size: 1.1rem;
-    }
-    .badge {
+    p { color: var(--muted); line-height: 1.55; margin-bottom: 1.25rem; }
+    a { color: var(--accent); }
+    code {
       display: inline-block;
-      margin-top: 1.5rem;
-      padding: 0.35rem 0.75rem;
-      border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
-      color: var(--accent);
-      font-size: 0.8rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      margin-top: 0.5rem;
+      padding: 0.4rem 0.7rem;
+      background: #1a222c;
+      border-radius: 6px;
+      color: var(--fg);
+      font-size: 0.9rem;
     }
   </style>
 </head>
 <body>
   <main>
     <h1>hey there</h1>
-    <p>Temporary placeholder page for GitHub Pages.</p>
-    <span class="badge">qingcisong / hey_there</span>
+    <p>
+      Voice-first check-in app. The live app needs a Node server (API keys stay
+      on the backend) — clone the repo and run locally.
+    </p>
+    <p>
+      <a href="https://github.com/qingcisong/hey_there">github.com/qingcisong/hey_there</a><br />
+      <code>cp env.template .env && npm start</code>
+    </p>
+    <p>
+      <a href="docs/hey-there-deck.html">Pitch deck</a>
+      ·
+      <a href="docs/HANDOFF.md">Design handoff</a>
+    </p>
   </main>
 </body>
 </html>

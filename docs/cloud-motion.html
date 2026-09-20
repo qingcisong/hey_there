@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hey There — cloud motion &amp; expressions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#15202B;--dusk:#22384B;--slate:#5D6F7E;--sun:#DFA05A;
+  --display:"Instrument Serif",Georgia,serif;--ui:"IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0D151C;color:#CFDCE5;font-family:var(--ui);min-height:100vh;
+  display:flex;align-items:center;justify-content:center;padding:40px 24px}
+.wrap{display:grid;grid-template-columns:auto 1fr;gap:56px;max-width:1060px;width:100%;align-items:center}
+@media(max-width:880px){.wrap{grid-template-columns:1fr;gap:36px;justify-items:center}}
+
+.phone{width:310px;height:640px;border-radius:46px;border:10px solid #0A1219;overflow:hidden;
+  position:relative;box-shadow:0 40px 90px -40px #000;flex:none}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  transition:background 1200ms ease}
+.cs-timer{padding:28px 0 0;font-size:11.5px;letter-spacing:.06em;color:rgba(21,32,43,.4)}
+.cloudbox{margin-top:52px;width:268px;height:196px}
+.cs-line{margin-top:14px;padding:0 32px;text-align:center;font-family:var(--display);font-size:27px;
+  line-height:1.25;color:var(--dusk);transition:opacity 380ms ease}
+.cs-sub{margin-top:9px;font-size:12.5px;color:rgba(21,32,43,.45);text-align:center;padding:0 34px;
+  line-height:1.5;transition:opacity 380ms ease}
+.stackbtn{position:absolute;bottom:30px;left:0;right:0;display:flex;flex-direction:column;
+  align-items:center;gap:11px}
+.cs-swap{border:1px solid rgba(21,32,43,.3);background:rgba(255,255,255,.55);color:var(--dusk);
+  border-radius:999px;padding:10px 20px;font:inherit;font-size:13.5px;cursor:pointer;
+  display:flex;align-items:center;gap:9px;min-width:186px;justify-content:center}
+.cs-swap:hover{background:rgba(255,255,255,.85)}
+.cs-swap:focus-visible{outline:2px solid var(--dusk);outline-offset:2px}
+.cs-swap .k{font-family:var(--mono);font-size:12.5px;opacity:.6;letter-spacing:.06em}
+.cs-end{border:1px solid rgba(21,32,43,.22);color:rgba(21,32,43,.6);background:transparent;
+  border-radius:999px;padding:10px 24px;font:inherit;font-size:13.5px;cursor:pointer}
+.cs-end:hover{background:rgba(21,32,43,.06)}
+
+h1{font-family:var(--display);font-size:42px;font-weight:400;color:#F0F5F8;line-height:1.05}
+.lead{color:#8FA6B6;font-size:15px;line-height:1.6;max-width:48ch;margin-top:12px}
+.grp{margin-top:24px}
+.grp>p{font-size:12.5px;color:#7E96A8;letter-spacing:.04em;margin-bottom:9px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button.sw{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:#CFDCE5;
+  font:inherit;font-size:14px;padding:9px 16px;border-radius:999px;cursor:pointer;transition:.18s}
+button.sw:hover{background:rgba(255,255,255,.12)}
+button.sw[aria-pressed="true"]{background:var(--sun);border-color:var(--sun);color:#15202B}
+button.sw:focus-visible{outline:2px solid var(--sun);outline-offset:3px}
+.slider{margin-top:20px;display:flex;align-items:center;gap:14px;font-size:13.5px;color:#8FA6B6}
+input[type=range]{flex:1;max-width:240px;accent-color:var(--sun)}
+.spec{margin-top:26px;border-top:1px solid rgba(255,255,255,.12);padding-top:18px;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 30px;font-size:13.5px;line-height:1.55}
+.spec b{color:#E4EDF2;font-weight:500;display:block;margin-bottom:2px}
+.spec span{color:#8397A6}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="phone">
+    <div class="screen" id="screen">
+      <div class="cs-timer">00:38</div>
+      <svg class="cloudbox" viewBox="26 14 168 126" aria-label="Cloud avatar">
+        <g id="grp">
+          <path d="M56 120h92a33 33 0 0 0 3-66 45 45 0 0 0-86-12 29 29 0 0 0-9 78z"
+                fill="#FFFFFF" stroke="#22384B" stroke-width="2.6" stroke-linejoin="round"/>
+          <g id="gFlat" opacity="0"></g>
+          <g id="gEyes"></g>
+          <g id="gExtra"></g>
+        </g>
+      </svg>
+      <div class="cs-line" id="line">I&rsquo;m listening.</div>
+      <div class="cs-sub" id="sub">Take as long as you want.</div>
+      <div class="stackbtn">
+        <button class="cs-swap" id="swap"><span id="swapName">Calm</span><span class="k" id="swapKao">◡ ◡</span></button>
+        <button class="cs-end">End call</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h1>Cloud motion</h1>
+    <p class="lead">Tap the button above &ldquo;End call&rdquo; to walk through all twelve expressions. Every change blinks through <span style="font-family:var(--mono)">- -</span> on the way &mdash; the eyes squash flat, rest for a beat, then open into the new shape. The body keeps breathing underneath, unchanged.</p>
+
+    <div class="grp"><p>Mode</p>
+      <div class="btns" id="modes">
+        <button class="sw" data-mode="listening" aria-pressed="true">Listening</button>
+        <button class="sw" data-mode="talking" aria-pressed="false">Telling you</button>
+        <button class="sw" data-mode="thinking" aria-pressed="false">Thinking</button>
+      </div>
+    </div>
+
+    <div class="grp"><p>Body rhythm &mdash; follows the expression, override here</p>
+      <div class="btns" id="reads">
+        <button class="sw" data-read="calm" aria-pressed="true">Calm</button>
+        <button class="sw" data-read="happy" aria-pressed="false">Happy</button>
+        <button class="sw" data-read="low" aria-pressed="false">Low</button>
+      </div>
+    </div>
+
+    <div class="slider">
+      <label for="amp">Motion intensity</label>
+      <input id="amp" type="range" min="40" max="200" value="100">
+      <span id="ampv">1.0&times;</span>
+    </div>
+
+    <div class="spec">
+      <div><b>Blink-through</b><span>170ms squash, 180ms held flat, 240ms open with a small overshoot. The pause at flat is what sells it.</span></div>
+      <div><b>Idle blink</b><span>The same squash fires on its own every 4&ndash;7s without changing expression, so the face is never frozen.</span></div>
+      <div><b>Accessories</b><span>Sweat drop, thinking dots and zzz fade on their own 90ms behind the eyes, never squash with them.</span></div>
+      <div><b>Untouched</b><span>Breath, hop, sink, tilt, speech nod and sway are exactly as they were. Expression rides on top.</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var grp=$('grp'), gEyes=$('gEyes'), gFlat=$('gFlat'), gExtra=$('gExtra'),
+    screen=$('screen'), line=$('line'), sub=$('sub');
+
+var LX=92, RX=126, Y=80, S='#22384B';
+function P(d,x){return '<path d="'+d+'" fill="none" stroke="'+S+'" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"'+(x||'')+'/>'}
+var E={
+  calm :function(x){return P('M'+(x-10)+' '+Y+' Q'+x+' '+(Y+9)+' '+(x+10)+' '+Y)},
+  happy:function(x){return P('M'+(x-10)+' '+(Y+5)+' Q'+x+' '+(Y-9)+' '+(x+10)+' '+(Y+5))},
+  gt   :function(x){return P('M'+(x-7)+' '+(Y-9)+' L'+(x+8)+' '+Y+' L'+(x-7)+' '+(Y+9))},
+  lt   :function(x){return P('M'+(x+7)+' '+(Y-9)+' L'+(x-8)+' '+Y+' L'+(x+7)+' '+(Y+9))},
+  flat :function(x){return P('M'+(x-10)+' '+Y+' h20')},
+  round:function(x){return '<circle cx="'+x+'" cy="'+Y+'" r="6.5" fill="none" stroke="'+S+'" stroke-width="4.6"/>'},
+  dot  :function(x){return '<circle cx="'+x+'" cy="'+Y+'" r="3.6" fill="'+S+'"/>'},
+  nope :function(x){return P('M'+(x-10)+' '+(Y-3)+' h15 l4 7')},
+  tee  :function(x){return P('M'+(x-9)+' '+(Y-10)+' h18 M'+x+' '+(Y-10)+' v21')},
+  ex   :function(x){return P('M'+(x-8)+' '+(Y-8)+' L'+(x+8)+' '+(Y+8)+' M'+(x+8)+' '+(Y-8)+' L'+(x-8)+' '+(Y+8))},
+  brow :function(x){return P('M'+(x-10)+' '+(Y-1)+' Q'+x+' '+(Y+7)+' '+(x+10)+' '+(Y-1))},
+  wEye :function(x){return '<circle cx="'+x+'" cy="'+(Y+15)+'" r="5.8" fill="none" stroke="'+S+'" stroke-width="4.4"/>'},
+  angL : P('M'+(LX-11)+' '+(Y-18)+' L'+(LX+8)+' '+(Y-8),' stroke-width="4.6"'),
+  angR : P('M'+(RX+11)+' '+(Y-18)+' L'+(RX-8)+' '+(Y-8),' stroke-width="4.6"'),
+  sweat:'<path d="M163 46 q-6 8 0 11.5 q6 -3.5 0 -11.5 z" fill="'+S+'" opacity=".7"/>',
+  think:'<g fill="'+S+'" opacity=".62"><circle cx="150" cy="52" r="3"/><circle cx="161" cy="45" r="3.8"/><circle cx="174" cy="37" r="4.6"/></g>',
+  zzz  :'<g fill="none" stroke="'+S+'" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" opacity=".65">'+
+        '<path d="M148 54 h8 l-8 9 h8"/><path d="M162 41 h10 l-10 11 h10"/></g>'
+};
+var FLAT = E.flat(LX)+E.flat(RX);
+
+var FACES=[
+ {nm:'Calm',      kao:'◡ ◡',   read:'calm',  eyes:E.calm(LX)+E.calm(RX),           extra:'',       word:'I’m listening.',      sub:'Take as long as you want.'},
+ {nm:'Happy',     kao:'^ ^',   read:'happy', eyes:E.happy(LX)+E.happy(RX),         extra:'',       word:'That sounds good.',   sub:'You sped up when you said it.'},
+ {nm:'Delighted', kao:'> <',   read:'happy', eyes:E.gt(LX)+E.lt(RX),               extra:'',       word:'Okay, that’s great.', sub:'First time you’ve laughed all week.'},
+ {nm:'Wink',      kao:'> -',   read:'happy', eyes:E.gt(LX)+E.flat(RX),             extra:'',       word:'Try one thing.',      sub:'Only if you feel like it.'},
+ {nm:'Attentive', kao:'o o',   read:'calm',  eyes:E.round(LX)+E.round(RX),         extra:'',       word:'Go on.',              sub:'I’m following.'},
+ {nm:'Thinking',  kao:'· ·',   read:'calm',  eyes:E.dot(LX)+E.dot(RX),             extra:E.think,  word:'One second.',         sub:'Putting together what I heard.'},
+ {nm:'Unsure',    kao:'¬ ¬',   read:'calm',  eyes:E.nope(LX)+E.nope(RX),           extra:'',       word:'Fine, though?',       sub:'You slowed down on that word.'},
+ {nm:'Concerned', kao:'⌒o o⌒', read:'low',   eyes:E.brow(LX)+E.brow(RX)+E.wEye(LX)+E.wEye(RX), extra:'', word:'That sounds heavy.', sub:'Tell me if I’ve got that wrong.'},
+ {nm:'Angry',     kao:'\\- -/;',read:'calm', eyes:E.angL+E.angR+E.flat(LX)+E.flat(RX), extra:E.sweat, word:'That’s not fair.', sub:'On your side, for what it’s worth.'},
+ {nm:'Sad',       kao:'T T',   read:'low',   eyes:E.tee(LX)+E.tee(RX),             extra:'',       word:'I’m here.',           sub:'No rush. Keep going when you want.'},
+ {nm:'Dying',     kao:'x x',   read:'low',   eyes:E.ex(LX)+E.ex(RX),               extra:'',       word:'That was a week.',    sub:'You’ve earned doing nothing.'},
+ {nm:'Resting',   kao:'- - z', read:'low',   eyes:E.flat(LX)+E.flat(RX),           extra:E.zzz,    word:'Hey there.',          sub:'Tap when you want to talk.'}
+];
+
+var BG={calm:['#E9EFF3','#D8E3EA'], happy:['#F5EEE2','#E9DAC3'], low:['#DEE6EC','#C4D2DE']};
+
+/* ---------- body rhythm — unchanged ---------- */
+var READ={
+  calm : {period:2.6, inflate:.055, squash:.030, bob:3.4, hop:0,  sway:0,   sink:0, tilt:0},
+  happy: {period:1.05,inflate:.040, squash:.075, bob:0,   hop:12, sway:3.4, sink:-3,tilt:0},
+  low  : {period:3.8, inflate:.026, squash:.018, bob:2.0, hop:0,  sway:1.2, sink:7, tilt:-2.4}
+};
+var mode='listening', read='calm', gain=1;
+var cur=null, tgt=null, from=null, tFrom=0, TR=650;
+function targets(){var r=READ[read],p={};for(var k in r)p[k]=r[k];
+  p.talk=mode==='talking'?1:0; p.think=mode==='thinking'?1:0; return p}
+function easeIO(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
+
+/* ---------- expression blink-through ---------- */
+var idx=0, nextIdx=0, tr=null, blinkT=0, nextBlink=0;
+var T_OUT=170, T_HOLD=180, T_IN=240;
+function easeIn(t){return t*t*t}
+function easeOutBack(t){var c=1.25;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2)}
+
+function paint(i){
+  gEyes.innerHTML=FACES[i].eyes;
+  gExtra.innerHTML=FACES[i].extra;
+  gFlat.innerHTML=FLAT;
+}
+function copy(i){
+  var f=FACES[i];
+  $('swapName').textContent=f.nm; $('swapKao').textContent=f.kao;
+  line.style.opacity=0; sub.style.opacity=0;
+  setTimeout(function(){ line.textContent=f.word; sub.textContent=f.sub;
+    line.style.opacity=1; sub.style.opacity=1; },260);
+}
+function setRead(r,sync){
+  read=r; from=cur?Object.assign({},cur):targets(); tgt=targets(); tFrom=performance.now();
+  screen.style.background='linear-gradient(180deg,'+BG[r][0]+' 0%,'+BG[r][1]+' 100%)';
+  if(sync)[].forEach.call($('reads').querySelectorAll('button'),function(b){
+    b.setAttribute('aria-pressed', b.getAttribute('data-read')===r?'true':'false')});
+}
+function advance(){
+  if(tr) return;
+  nextIdx=(idx+1)%FACES.length;
+  tr={t0:performance.now(), swapped:false};
+  copy(nextIdx);
+  setRead(FACES[nextIdx].read,true);
+}
+
+/* ---------- frame ---------- */
+var t0=performance.now();
+function frame(now){
+  var t=(now-t0)/1000;
+
+  /* body — untouched */
+  var k=Math.min(1,(now-tFrom)/TR), e=easeIO(k), p={};
+  for(var key in tgt){var f0=(from[key]!==undefined?from[key]:tgt[key]); p[key]=f0+(tgt[key]-f0)*e}
+  cur=p;
+  var ph=t*2*Math.PI/p.period, sx=1, sy=1, dy=p.sink, rot=p.tilt;
+  if(p.hop>0.5){
+    var g=Math.abs(Math.sin(ph));
+    dy -= p.hop*Math.pow(g,0.62)*gain;
+    sx  = 1 + p.squash*(1-g)*gain - p.inflate*g*0.4*gain;
+    sy  = 1 - p.squash*(1-g)*gain + p.inflate*g*gain;
+    rot+= p.sway*Math.sin(ph*0.5)*gain;
+  } else {
+    var b=Math.sin(ph);
+    dy -= p.bob*b*gain;
+    sy  = 1 + p.inflate*b*gain;
+    sx  = 1 + p.squash*Math.sin(ph-0.35)*gain;
+    rot+= p.sway*Math.sin(ph*0.6)*gain;
+  }
+  if(p.talk>0.05){var sp=(Math.sin(t*8.4)*.62+Math.sin(t*5.1+1.1)*.38)*p.talk*gain;
+    dy+=sp*3.4; sy+=sp*0.030; rot+=sp*1.5}
+  if(p.think>0.05){var w=Math.sin(t*2*Math.PI/1.9)*p.think*gain;
+    rot+=w*5.0; dy+=Math.sin(t*2*Math.PI/0.95)*1.4*p.think*gain}
+  grp.setAttribute('transform','translate(100,118) translate(0,'+dy.toFixed(2)+') rotate('+rot.toFixed(2)+
+    ') scale('+sx.toFixed(4)+','+sy.toFixed(4)+') translate(-100,-118)');
+
+  /* eyes — blink-through-flat */
+  var lid=1, eOp=1, fOp=0, xOp=1;
+  if(tr){
+    var d=now-tr.t0;
+    if(d<T_OUT){                                   // squash shut
+      var u=d/T_OUT; lid=1-(1-0.06)*easeIn(u);
+      eOp=u<.7?1:1-(u-.7)/.3; fOp=u<.7?0:(u-.7)/.3; xOp=Math.max(0,1-u/0.6);
+    } else if(d<T_OUT+T_HOLD){                     // held flat
+      lid=0.06; eOp=0; fOp=1; xOp=0;
+      if(!tr.swapped){ idx=nextIdx; paint(idx); tr.swapped=true; }
+    } else if(d<T_OUT+T_HOLD+T_IN){                // open into the new shape
+      var v=(d-T_OUT-T_HOLD)/T_IN;
+      lid=0.06+(1-0.06)*easeOutBack(Math.min(1,v));
+      eOp=Math.min(1,v/.25); fOp=Math.max(0,1-v/.25);
+      xOp=Math.max(0,(v-0.35)/0.65);
+    } else { tr=null; nextBlink=now+4000+Math.random()*3000; }
+  } else {
+    if(!nextBlink) nextBlink=now+4000+Math.random()*3000;
+    if(now>nextBlink) blinkT=now, nextBlink=now+4000+Math.random()*3000;
+    var bd=now-blinkT;
+    if(bd<170){ var q=bd/170; lid=1-0.94*Math.sin(q*Math.PI) }   // idle blink
+  }
+  gEyes.setAttribute('transform','translate(0,'+Y+') scale(1,'+lid.toFixed(3)+') translate(0,'+(-Y)+')');
+  gEyes.setAttribute('opacity',eOp.toFixed(2));
+  gFlat.setAttribute('opacity',fOp.toFixed(2));
+  gExtra.setAttribute('opacity',xOp.toFixed(2));
+
+  requestAnimationFrame(frame);
+}
+
+/* ---------- controls ---------- */
+$('swap').addEventListener('click',advance);
+$('modes').addEventListener('click',function(ev){
+  var b=ev.target.closest('button'); if(!b) return;
+  [].forEach.call(this.querySelectorAll('button'),function(x){x.setAttribute('aria-pressed','false')});
+  b.setAttribute('aria-pressed','true'); mode=b.getAttribute('data-mode');
+  from=cur?Object.assign({},cur):targets(); tgt=targets(); tFrom=performance.now();
+});
+$('reads').addEventListener('click',function(ev){
+  var b=ev.target.closest('button'); if(!b) return; setRead(b.getAttribute('data-read'),true);
+});
+$('amp').addEventListener('input',function(){gain=this.value/100; $('ampv').textContent=gain.toFixed(1)+'\u00d7'});
+
+paint(0); copy(0); setRead('calm',true); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

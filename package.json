@@ -1,0 +1,9 @@
+{
+  "name": "hey-there",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start":    "node --env-file=.env server.js",
+    "test:sop": "node --env-file=.env scripts/test-sop.js"
+  }
+}
