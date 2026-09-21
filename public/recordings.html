@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hey There — debug</title>
+<title>Hey There — recordings</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -56,8 +56,8 @@ audio{width:100%; margin-top:10px}
 .ev-line.out{color:#3a5f8a}
 .ev-line.err{color:#8a3a2a}
 .ev-line.meta{color:rgba(34,56,75,.5)}
-.baseline-turns{margin-top:8px}
-.baseline-turns table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12.5px}
+.baseline-turns{margin-top:8px; overflow-x:auto}
+.baseline-turns table{width:100%; min-width:480px; border-collapse:collapse; font-family:var(--mono); font-size:12.5px}
 .baseline-turns th,.baseline-turns td{padding:5px 8px; text-align:right; border-bottom:1px solid rgba(34,56,75,.1)}
 .baseline-turns th:first-child,.baseline-turns td:first-child{text-align:left}
 .baseline-turns th{color:rgba(34,56,75,.55); font-weight:500}
@@ -68,7 +68,7 @@ audio{width:100%; margin-top:10px}
 <body>
 <div class="wrap">
   <a href="/">← back to app</a>
-  <h1>Debug</h1>
+  <h1>Recordings</h1>
   <p class="lead">Recordings and baseline live in IndexedDB on this browser. Nothing is uploaded except when you tap re-analyze.</p>
 
   <div class="bar">
