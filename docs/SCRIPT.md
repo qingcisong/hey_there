@@ -32,27 +32,30 @@ might help.
 ## Demo — ~1 minute 25 seconds
 
 Hey There starts with a phone call. The first time, it listens for a minute to
-learn my normal voice and pace. After that I just talk.
+learn my normal voice, pace, and pauses. After that, I just talk.
 
-〔Record a short clip of your actual mood today. Include real hesitation — pause,
-trail off, reach for a word. Don't perform it; the whole point is that it isn't
-performed.〕
+〔12–15 seconds of real audio: say how your day is going, with natural
+hesitation, pauses, and the search for a word. The subtitles and avatar react on
+screen while you're talking.〕
 
-If you type, you edit. When you talk, you hesitate, you pause, you reach for a
-word. That's part of what the app reads.
+When you type, you edit. When you talk, you hesitate, you pause, you reach for a
+word — and that's part of what it reads. The cloud reacts while I'm still
+speaking: less like typing into a box, more like someone's listening.
 
-While I'm speaking, the avatar reacts — less like typing into a box, more like
-someone's listening.
+When I stop, it tells me what it noticed.
 
-When I stop, it reflects back what it noticed.
+〔On screen〕 *You said it was a long day — and you're talking slower than usual,
+with longer pauses than normal.*
 
-〔On screen〕 *You talked about your day like it was fine. But you're speaking
-slower than usual, and you stopped a lot.*
+It isn't guessing the opposite of what I said. It's telling me how much. So I
+get the final say: agree, correct it, or say there's more.
 
-Voice gives clues, not conclusions — so I get the final say: agree, correct it,
-or say there's more and keep going.
+〔on screen: the mismatch / agree / correct prompts〕
 
-〔On screen: the three options〕
+And when the two don't line up — I say I'm fine, but I sound flat — it doesn't
+overrule me. It says so, and asks.
+
+〔On screen〕 *That didn't quite match how you sounded. Did I read that wrong?*
 
 Then it offers one thing to try. It looks at the weather, where I am, and what
 my week has looked like, and picks what fits right now. Today it sees four clear
@@ -67,17 +70,21 @@ thing to decide.
 
 ## Technology — ~40 seconds
 
-Hey There runs on 〔framework〕. Voice comes in through the OpenAI Realtime API,
-Groq handles transcription, and Open-Meteo tells it what the next few hours look
-like where you are.
+Hey There is built as a browser app with a static frontend and Cloudflare Pages
+Functions handling the server side. The live conversation runs through OpenAI's
+Realtime API, Groq handles speech-to-text and the text side of the read, and
+Open-Meteo supplies the user's local weather and next-hours forecast.
 
-Let me show you one piece of it — how it reads your voice. That first minute
-measures your baseline: your speaking rate, how much your pitch moves, how long
-your pauses run. Every call after that gets compared to you, not to an average
-person. A slow, flat voice means completely different things depending on whose
-voice it is.
+Let me show you one piece of it — how it reads your voice.
 
-〔privacy sentence〕
+A local pitch engine analyzes the speech on-device, and the transcript comes back
+with word-level timestamps — so I can measure three things: how fast you're
+speaking, how far your pitch moves, and how long you pause. Then that gets
+compared against what the words actually said. 〔privacy sentence〕
+
+The first minute is a calibration. Everything after that is measured against
+your own baseline, not a generic average. That's why a slow, flat voice can mean
+something completely different depending on whose voice it is.
 
 And if what someone says goes past an ordinary bad day, it stops suggesting and
 shows the 988 line.
