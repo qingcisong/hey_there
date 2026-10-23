@@ -1347,6 +1347,16 @@ async function endCall() {
 
 /* Boot: check for saved access code, otherwise show gate. */
 async function boot() {
+  // A shared link can carry the code (?code=...) so the visitor never sees the gate.
+  // Save it like a manually entered code, then strip it from the address bar.
+  const params = new URLSearchParams(location.search);
+  const urlCode = (params.get('code') || '').trim();
+  if (urlCode) {
+    localStorage.setItem('heythere_code', urlCode);
+    params.delete('code');
+    const qs = params.toString();
+    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+  }
   const saved = localStorage.getItem('heythere_code') || '';
   if (saved) {
     try {
